@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>客服機器人</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="style/app.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="container py-5">
+
+      <div class="row d-flex justify-content-center">
+        <div class="col-md-10 col-lg-8 col-xl-6">
+  
+          <div class="card" id="chat2">
+            <div class="card-header d-flex justify-content-between align-items-center p-3">
+              <h5 class="mb-0">客服機器人</h5>
+            </div>
+            <div class="card-body" id="chatroom" data-mdb-perfect-scrollbar="true" style="position: relative; height: 60vh; overflow: overlay;">
+              <div class="divider d-flex align-items-center mb-4">
+                <p class="text-center mx-3 mb-0" style="color: #a2aab7;">Today</p>
+              </div>
+  
+              <!-- <div class="d-flex flex-row justify-content-end mb-4 pt-1">
+                <div>
+                  <p class="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">你好！有什麼可以幫忙嗎？</p>
+                  <p class="small me-3 mb-3 rounded-3 text-muted d-flex justify-content-end">00:06</p>
+                </div>
+                <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava4-bg.webp"
+                  alt="avatar 1" style="width: 45px; height: 100%;">
+              </div> -->
+  
+              <div class="d-flex flex-row justify-content-start mb-4">
+                <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp"
+                  alt="avatar 1" style="width: 45px; height: 100%;">
+                <div>
+                  <p class="small p-2 ms-3 mb-1 rounded-3" style="background-color: #f5f6f7;">你好！有什麼可以幫忙嗎？</p>
+                  <p class="small ms-3 mb-3 rounded-3 text-muted" id="first_chat">00:07</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-footer text-muted d-flex justify-content-start align-items-center p-3">
+              <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava4-bg.webp"
+                alt="avatar 3" style="width: 40px; height: 100%;">
+              <input type="text" class="form-control form-control-lg mx-2" id="sendMessage"
+                placeholder="傳送訊息">
+              <a class="ms-3" href="#" id="sendBtn"><i class="fas fa-paper-plane"></i></a>
+            </div>
+          </div>
+  
+        </div>
+      </div>
+  
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+
+      document.getElementById('sendBtn').addEventListener('click', function() {
+        // 獲取輸入框的值
+        var messageInput = document.getElementById('sendMessage');
+        var message = messageInput.value.trim();
+
+        // 如果消息為空，不進行處理
+        if (message === '') {
+          return;
+        }
+
+        createUserChatBox(message);
+        callOpenAIService(message);
+        messageInput.value = '';
+      });
+
+      // 獲取當前時間
+      function getCurrentTime() {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+      }
+    
+      // 更新時間
+      function updateTimestamp() {
+        const timestampElement = document.querySelector('#first_chat');
+        if (timestampElement) {
+          timestampElement.textContent = getCurrentTime();
+        }
+      }
+
+      function createUserChatBox(message) {
+        // 創建新的聊天項目
+        var chatItem = document.createElement('div');
+        chatItem.className = 'd-flex flex-row justify-content-end mb-4 pt-1';
+
+        var contentWrapper = document.createElement('div');
+        contentWrapper.className = 'me-3';
+        var contentMessage = document.createElement('p');
+        contentMessage.className = 'small p-2 me-3 mb-1 text-white rounded-3 bg-primary';
+        contentMessage.textContent = message;
+        var contentTimestamp = document.createElement('p');
+        contentTimestamp.className = 'small me-3 mb-3 rounded-3 text-muted d-flex justify-content-end';
+        contentTimestamp.textContent = getCurrentTime();
+
+        contentWrapper.appendChild(contentMessage);
+        contentWrapper.appendChild(contentTimestamp);
+
+        var avatarImage = document.createElement('img');
+        avatarImage.src = 'https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava4-bg.webp';
+        avatarImage.alt = 'avatar 1';
+        avatarImage.style.width = '45px';
+        avatarImage.style.height = '100%';
+
+        chatItem.appendChild(contentWrapper);
+        chatItem.appendChild(avatarImage);
+
+        // 將新的聊天項目添加到 chatroom
+        var chatroom = document.getElementById('chatroom');
+        chatroom.appendChild(chatItem);
+      }
+    
+      function callOpenAIService(message) {
+        // 發送消息到伺服器，這裡使用 jQuery 的 AJAX 函數
+        $.ajax({
+          url: 'http://192.168.1.15:5051/api/vi/openai/semantickerne', // 替換成你的伺服器端點
+          method: 'POST',
+          crossDomain: true,
+          data: {
+            "messages": [
+              {
+                "content": "string"
+              }
+            ]
+          },
+          success: function(response) {
+            createBotChatBox(response);
+            console.log(response);
+            // // 收到伺服器回應後，創建新的聊天項目（伺服器回應的消息）
+            // var serverChatItem = createChatItem(response, 'https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava4-bg.webp', 'justify-content-end');
+            // // 將新的聊天項目添加到 chatroom
+            // chatroom.appendChild(serverChatItem);
+          },
+          error: function() {
+            createBotChatBox('伺服器錯誤');
+          }
+        });
+        
+      }
+      function createBotChatBox(message) {
+        var chatItem = document.createElement('div');
+        chatItem.className = 'd-flex flex-row mb-4 pt-1';
+
+        var avatarImage = document.createElement('img');
+        avatarImage.src = "https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp";
+        avatarImage.alt = 'avatar';
+        avatarImage.style.width = '45px';
+        avatarImage.style.height = '100%';
+
+        var contentWrapper = document.createElement('div');
+        contentWrapper.className = 'ms-3';
+        var contentMessage = document.createElement('p');
+        contentMessage.className = 'small p-2 mb-1 rounded-3';
+        contentMessage.style= 'background-color: #f5f6f7;';
+        contentMessage.textContent = message;
+        var contentTimestamp = document.createElement('p');
+        contentTimestamp.className = 'small mb-3 rounded-3 text-muted';
+        contentTimestamp.textContent = getCurrentTime();
+
+        contentWrapper.appendChild(contentMessage);
+        contentWrapper.appendChild(contentTimestamp);
+
+        chatItem.appendChild(avatarImage);
+        chatItem.appendChild(contentWrapper);
+
+        // 將新的聊天項目添加到 chatroom
+        var chatroom = document.getElementById('chatroom');
+        chatroom.appendChild(chatItem);
+      }
+
+      updateTimestamp();
+    </script>
+  </body>
+</html>
