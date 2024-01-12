@@ -14,3 +14,8 @@
   height: 1px;
   background: #eee;
 }
+
+.spinner-grow-sm {
+  --bs-spinner-width: 0.5rem;
+  --bs-spinner-height: 0.5rem;
+}
